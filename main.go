@@ -11,6 +11,7 @@ import (
 const (
 	//	WIKI_PREFIX       = "http://en.wikipedia.org"
 	WIKI_PREFIX       = "http://10.102.44.202"
+	BEGIN_OFFSET      = 10000
 	LINKS_AT_ONCE     = 50
 	NUM_OF_ITERATIONS = 100
 
@@ -27,8 +28,7 @@ func GrabLinks(wiki string, clinks chan []string) {
 	oles := doc.Find("ol")
 
 	oles.Find("li").Each(func(i int, s *goquery.Selection) {
-		link, err := s.Find("a").Eq(1).Attr("href")
-		//		log.Println(err)
+		link, _ := s.Find("a").Eq(1).Attr("href")
 		//		fmt.Printf("%s\n", link)
 		links = append(links, link)
 	})
@@ -38,9 +38,10 @@ func GrabLinks(wiki string, clinks chan []string) {
 func ScrapeAllWikis() {
 	clinks := make(chan []string, NUM_OF_ITERATIONS)
 	for idx := 0; idx < NUM_OF_ITERATIONS; idx++ {
-		offset := LINKS_AT_ONCE * idx
+		offset := LINKS_AT_ONCE*idx + BEGIN_OFFSET
 		//"https://en.wikipedia.org/w/index.php?title=Special:LongPages&limit=5000&offset=0"
-		link := fmt.Sprintf("%s/index.php?title=Special:LongPages&limit=%d&offset=%d",
+		//		link := fmt.Sprintf("%s/index.php?title=Special:LongPages&limit=%d&offset=%d",
+		link := fmt.Sprintf("%s/index.php?title=Special:ShortPages&limit=%d&offset=%d",
 			WIKI_PREFIX, LINKS_AT_ONCE, offset)
 		//		fmt.Printf("Grabbing: %s\n", link)
 		go GrabLinks(link, clinks)
